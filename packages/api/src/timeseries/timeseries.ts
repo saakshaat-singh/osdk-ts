@@ -16,9 +16,10 @@
 
 import { TimeDurationMapping } from "../mapping/DurationMapping.js";
 
-type WithKind<T, K extends string> = T & { kind: K };
+type WithKind<T, K extends string> = T & { kind?: K };
 
-export type TimeSeriesQuery = WithKind<{
+export type TimeSeriesQuery = WithKind<
+  | {
     $before: number;
     $unit: keyof typeof TimeseriesDurationMapping;
     $after?: never;
@@ -45,7 +46,9 @@ export type TimeSeriesQuery = WithKind<{
     $before?: never;
     $after?: never;
     $unit?: never;
-  }, "v1">;
+  },
+  "v1"
+>;
 
 export type TimeSeriesQueryV2 = WithKind<{
   range?: TimeSeriesRange;
