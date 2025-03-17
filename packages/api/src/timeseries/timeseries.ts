@@ -16,8 +16,10 @@
 
 import { TimeDurationMapping } from "../mapping/DurationMapping.js";
 
-export type TimeSeriesQuery =
-  | {
+type WithKind<T, K extends string> = T & { kind: K };
+
+export type TimeSeriesQuery = WithKind<{
+    kind: "v1";
     $before: number;
     $unit: keyof typeof TimeseriesDurationMapping;
     $after?: never;
@@ -25,6 +27,7 @@ export type TimeSeriesQuery =
     $endTime?: never;
   }
   | {
+    kind: "v1";
     $after: number;
     $unit: keyof typeof TimeseriesDurationMapping;
     $before?: never;
@@ -32,6 +35,7 @@ export type TimeSeriesQuery =
     $endTime?: never;
   }
   | {
+    kind: "v1";
     $startTime: string;
     $endTime?: string;
     $before?: never;
@@ -39,12 +43,30 @@ export type TimeSeriesQuery =
     $unit?: never;
   }
   | {
+    kind: "v1";
     $startTime?: string;
     $endTime: string;
     $before?: never;
     $after?: never;
     $unit?: never;
-  };
+  }, "v1">;
+
+export type TimeSeriesQueryV2 = WithKind<{
+  range?: TimeSeriesRange;
+}, "v2">;
+
+export type TimeSeriesRange = AbsoluteTimeRange | RelativeTimeRange;
+
+export type AbsoluteTimeRange = WithKind<{
+  startTime?: string;
+  endTime?: string;
+}, "absolute">;
+
+export type RelativeTimeRange = WithKind<{
+  before?: number;
+  unit: keyof typeof TimeseriesDurationMapping;
+  after?: number;
+}, "relative">;
 
 export type TimeseriesDurationUnits =
   | "YEARS"

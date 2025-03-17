@@ -131,6 +131,8 @@ export type {
   TimeSeriesPoint,
   TimeSeriesProperty,
   TimeSeriesQuery,
+  TimeSeriesQueryV2,
+  TimeSeriesRange,
 } from "./timeseries/timeseries.js";
 export type { LinkedType, LinkNames } from "./util/LinkUtils.js";
 export {};

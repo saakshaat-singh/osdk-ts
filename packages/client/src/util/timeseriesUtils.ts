@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { TimeSeriesQuery } from "@osdk/api";
+import type { TimeSeriesQuery, TimeSeriesQueryV2, TimeSeriesRange } from "@osdk/api";
 import { TimeseriesDurationMapping } from "@osdk/api";
-import type { TimeRange } from "@osdk/foundry.ontologies";
+import type { StreamTimeSeriesPointsRequest, TimeRange } from "@osdk/foundry.ontologies";
 import { iterateReadableStream, parseStreamedResponse } from "./streamutils.js";
 
 export function getTimeRange(body: TimeSeriesQuery): TimeRange {
@@ -45,6 +45,57 @@ export function getTimeRange(body: TimeSeriesQuery): TimeRange {
       },
     };
 }
+
+export const getTimeRangeV2 = (query: TimeSeriesRange): TimeRange | undefined => {
+  switch(query.kind) {
+    case "absolute":
+      return {
+        type: "absolute",
+        startTime: query.startTime,
+        endTime: query.endTime,
+      };
+    case "relative":
+      return query.before
+      ? {
+        type: "relative",
+        startTime: {
+          when: "BEFORE",
+          value: query.before,
+          unit: TimeseriesDurationMapping[query.unit],
+        },
+      }
+      : {
+        type: "relative",
+        endTime: {
+          when: "AFTER",
+          value: query.after!,
+          unit: TimeseriesDurationMapping[query.unit],
+        },
+      };
+    default:
+      return undefined;
+  }
+}
+
+export const parseTimeSeriesQuery = (body: TimeSeriesQuery | TimeSeriesQueryV2 | undefined): {
+  range?: TimeRange,
+} => {
+  if(body === undefined) {
+    return {};
+  }
+  switch(body.kind) {
+    case "v1":
+      return {
+        range: getTimeRange(body),
+      };
+    case "v2":
+      return {
+        range: body.range ? getTimeRangeV2(body.range) : undefined,
+      }
+    default:
+      return {}
+  }
+};
 
 export async function* asyncIterPointsHelper<
   T extends number | string | GeoJSON.Point,
